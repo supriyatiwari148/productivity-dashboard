@@ -1,0 +1,12 @@
+import { useEffect, useState } from "react";
+import api from "../services/api";
+
+export default function Tasks() {
+  const [tasks, setTasks] = useState([]); const [title, setTitle] = useState(""); const [priority, setPriority] = useState("Medium"); const [loading, setLoading] = useState(false);
+  const loadTasks = async () => { try { const res = await api.get("/tasks"); setTasks(res.data || []); } catch (err) { if (err.response?.status === 401) alert("Please login first."); } };
+  useEffect(() => { loadTasks(); }, []);
+  const addTask = async e => { e.preventDefault(); if (!title.trim()) return; setLoading(true); try { await api.post("/tasks", { title, priority, status: "Pending" }); setTitle(""); await loadTasks(); } catch (err) { alert(err.response?.data?.message || "Could not create task."); } finally { setLoading(false); } };
+  const toggle = async task => { try { await api.put(`/tasks/${task._id}`, { status: task.status === "Completed" ? "Pending" : "Completed" }); await loadTasks(); } catch (err) { alert(err.response?.data?.message || "Could not update task."); } };
+  const remove = async id => { if (!confirm("Delete this task?")) return; try { await api.delete(`/tasks/${id}`); await loadTasks(); } catch (err) { alert(err.response?.data?.message || "Could not delete task."); } };
+  return <><header className="page-header"><div><p className="eyebrow">PRODUCTIVITY</p><h1>Tasks</h1><p className="muted">Create, complete and manage your tasks.</p></div></header><div className="panel"><form className="task-form" onSubmit={addTask}><input value={title} onChange={e => setTitle(e.target.value)} placeholder="What do you need to do?"/><select value={priority} onChange={e => setPriority(e.target.value)}><option>Low</option><option>Medium</option><option>High</option></select><button className="primary-btn" disabled={loading}>{loading ? "Adding..." : "Add Task"}</button></form><div className="list">{tasks.length === 0 ? <div className="empty-state compact"><h3>No tasks found</h3><p>Create your first task above.</p></div> : tasks.map(task => <div className="list-item" key={task._id}><div><strong className={task.status === "Completed" ? "done" : ""}>{task.title}</strong><small>{task.priority} · {task.status}</small></div><div className="item-actions"><button className="secondary-btn" onClick={() => toggle(task)}>{task.status === "Completed" ? "Undo" : "Complete"}</button><button className="danger-btn" onClick={() => remove(task._id)}>Delete</button></div></div>)}</div></div></>;
+}

@@ -1,0 +1,10 @@
+{
+  "name": "productivity-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal Productivity Dashboard (MERN)",
+  "scripts": {
+    "backend": "npm run dev --prefix backend",
+    "seed": "npm run seed --prefix backend"
+  }
+}
